@@ -1,3 +1,5 @@
 Fork of BepInEx https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2202/
 ValheimPlusByGrantapher https://www.nexusmods.com/valheim/mods/2323?tab=files&file_id=18688
 Jotunn https://www.nexusmods.com/valheim/mods/1138?tab=files&file_id=18871
+Epic Loot
+Plant Everything https://www.nexusmods.com/valheim/mods/1042?tab=files&file_id=19088
