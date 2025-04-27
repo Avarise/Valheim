@@ -17,9 +17,9 @@ a="/$0"; a=${a%/*}; a=${a#/}; a=${a:-.}; BASEDIR=$(cd "$a"; pwd -P)
 
 # Special case: program is launched via Steam
 # In that case rerun the script via their bootstrapper to ensure Steam overlay works
-if [ "$2" = "SteamLaunch" ]; then
-    cmd="$1 $2 $3 $4 $0"
-    shift 4
+if [ "$4" = "SteamLaunch" ]; then
+    cmd="$1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} $0"
+    shift 11
     exec $cmd $@
     exit
 fi
