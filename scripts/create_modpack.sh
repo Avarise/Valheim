@@ -43,19 +43,16 @@ if [ ! -d "$PAYLOAD" ]; then
     exit 1
 fi
 
-# Create the structure inside temporary directory
-mkdir -p "$TEMP_DIR/mod_pack"
+# Copy the contents of the payload directly into the temp directory
+cp -r "$PAYLOAD/"* "$TEMP_DIR"
 
-# Copy the contents of the source directory to the mod_pack directory
-cp -r "$PAYLOAD/"* "$TEMP_DIR/mod_pack"
-
-# Compress the directory into a .zip archive
+# Compress the contents of the temp directory into a .zip archive
 cd "$TEMP_DIR" || exit 1
 
 if [ -n "$PASSWORD" ]; then
-    zip -r --password "$PASSWORD" "$TARGET_ARCHIVE" "mod_pack"
+    zip -r --password "$TARGET_ARCHIVE" ./*
 else
-    zip -r "$TARGET_ARCHIVE" "mod_pack"
+    zip -r "$TARGET_ARCHIVE" ./*
 fi
 
 # Clean up the temporary directory
