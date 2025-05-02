@@ -1,0 +1,35 @@
+name: Build and Release Modpack
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'v5.0'
+        required: true
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up environment
+      run: sudo apt-get install -y zip
+
+    - name: Create ZIP modpack
+      run: |
+        mkdir -p mod_pack
+        cp -r lib/* mod_pack/
+        zip -r sigil-valheim.zip mod_pack
+        ls -lh sigil-valheim.zip
+
+    - name: Create GitHub Release and upload ZIP
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.inputs.tag }}
+        name: ${{ github.event.inputs.tag }}
+        files: sigil-valheim.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
