@@ -77,7 +77,19 @@ function Install-Modpack {
     $tempZip = [System.IO.Path]::GetTempFileName() + ".zip"
 
     Write-Host "Downloading: $($asset.name)" -ForegroundColor Yellow
-    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $tempZip
+    
+    # Use fast streaming download
+    $httpClient = New-Object System.Net.Http.HttpClient
+    $response = $httpClient.GetAsync($asset.browser_download_url, [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead).Result
+
+    $stream = $response.Content.ReadAsStreamAsync().Result
+    $fileStream = [System.IO.File]::Create($tempZip)
+    $stream.CopyTo($fileStream)
+
+    $fileStream.Close()
+    $stream.Close()
+    $httpClient.Dispose()
+
 
     Write-Host "Extracting to: $installDir" -ForegroundColor Yellow
     Add-Type -AssemblyName System.IO.Compression.FileSystem
