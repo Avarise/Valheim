@@ -12,12 +12,11 @@ function Get-ValheimInstallPath {
         "HKLM:\Software\WOW6432Node\Valve\Steam"
     )
 
+    $steamPath = $null
     foreach ($path in $regPaths) {
         try {
             $steamPath = (Get-ItemProperty -Path $path).SteamPath
-            if ($steamPath) {
-                break
-            }
+            if ($steamPath) { break }
         } catch {
             continue
         }
@@ -29,7 +28,7 @@ function Get-ValheimInstallPath {
 
     Write-Host "Steam found at: $steamPath" -ForegroundColor Green
 
-    # Parse library folders
+    # Parse Steam library folders
     $libraryFile = Join-Path $steamPath "steamapps\libraryfolders.vdf"
     if (-not (Test-Path $libraryFile)) {
         throw "libraryfolders.vdf not found at expected location: $libraryFile"
@@ -37,13 +36,14 @@ function Get-ValheimInstallPath {
 
     $vdf = Get-Content $libraryFile -Raw
 
-    $matches = Select-String -InputObject $vdf -Pattern "\"path\"\s+\"([^\"]+)\"" -AllMatches
+    $pattern = '"path"\s+"([^"]+)"'
+    $matches = [regex]::Matches($vdf, $pattern)
+
     $steamLibraries = @()
-    foreach ($match in $matches.Matches) {
+    foreach ($match in $matches) {
         $steamLibraries += $match.Groups[1].Value
     }
 
-    # Append steamapps/common/Valheim
     foreach ($lib in $steamLibraries) {
         $valheimPath = Join-Path $lib "steamapps\common\Valheim"
         if (Test-Path $valheimPath) {
@@ -81,18 +81,18 @@ function Install-Modpack {
 
     Write-Host "Extracting to: $installDir" -ForegroundColor Yellow
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($tempZip, $installDir, [System.Text.Encoding]::UTF8)
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($tempZip, $installDir)
 
     Remove-Item $tempZip -Force
 
     Write-Host "Modpack installed successfully!" -ForegroundColor Green
 }
 
-# Main script execution
+# Main script
 try {
     $installDir = Get-ValheimInstallPath
     Install-Modpack -installDir $installDir
 } catch {
-    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host ("ERROR: " + $_.Exception.Message) -ForegroundColor Red
     exit 1
 }
