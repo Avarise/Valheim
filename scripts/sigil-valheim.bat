@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 :: === CONFIG ===
-set REPO=avarise/valheim
+set REPO=Avarise/Valheim
 set BRANCH=main
 set SCRIPT_NAME=auto-install.ps1
 set TEMP_SCRIPT=%TEMP%\valheim_installer.ps1
