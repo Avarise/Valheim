@@ -6,8 +6,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FTP_ARCHIVE="/srv/ftp/sigil-valheim.zip"
 
 # Set the paths relative to the script's location
-TARGET_ARCHIVE="$SCRIPT_DIR/sigil-valheim.zip"
-PAYLOAD="$SCRIPT_DIR/lib"
+TARGET_ARCHIVE="$SCRIPT_DIR/../sigil-valheim.zip"
+PAYLOAD="$SCRIPT_DIR/../lib"
 
 # Generate a unique temporary directory
 TEMP_DIR="$(mktemp -d /tmp/sigil-valheim.XXXXXX)"
