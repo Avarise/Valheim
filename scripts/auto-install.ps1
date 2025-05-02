@@ -1,68 +1,99 @@
-$ErrorActionPreference = "Stop"
+<#
+.SYNOPSIS
+    Auto-installs the latest Valheim modpack from GitHub into the game's root directory.
 
-function Get-SteamLibraryPath {
-    $regPaths = @(
-        "HKCU:\Software\Valve\Steam",
-        "HKLM:\SOFTWARE\Wow6432Node\Valve\Steam"
-    )
-    foreach ($path in $regPaths) {
-        try {
-            $installPath = Get-ItemPropertyValue -Path $path -Name "SteamPath"
-            if (Test-Path $installPath) {
-                return $installPath
+.DESCRIPTION
+    - Detects the Valheim Steam installation path.
+    - Downloads the latest release ZIP from the GitHub repo.
+    - Extracts it into the Valheim root (not BepInEx).
+    - Displays clear messages to the user.
+
+.NOTES
+    Author: Avarise
+#>
+
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+Write-Host "`n🔧 Starting Valheim Modpack Installer..." -ForegroundColor Cyan
+
+# GitHub info
+$repo = "Avarise/Valheim"
+$releaseApi = "https://api.github.com/repos/$repo/releases/latest"
+$tempZip = "$env:TEMP\Valheim-Modpack.zip"
+
+# Attempt to detect Valheim install
+function Get-ValheimPath {
+    # Registry method (common for Steam installs)
+    $key = 'HKCU:\Software\Valve\Steam'
+    try {
+        $steamPath = (Get-ItemProperty -Path $key).SteamPath
+        if ($steamPath) {
+            $libraryFoldersFile = Join-Path $steamPath 'steamapps\libraryfolders.vdf'
+            if (Test-Path $libraryFoldersFile) {
+                $vdf = Get-Content $libraryFoldersFile -Raw
+                $matches = Select-String -InputObject $vdf -Pattern '"path"\s+"([^"]+)"' -AllMatches
+                foreach ($match in $matches.Matches) {
+                    $libPath = $match.Groups[1].Value
+                    $valheimPath = Join-Path $libPath "steamapps\common\Valheim"
+                    if (Test-Path $valheimPath) {
+                        return $valheimPath
+                    }
+                }
             }
-        } catch {}
+        }
+    } catch {}
+
+    # Fallback guess
+    $default = "$env:ProgramFiles(x86)\Steam\steamapps\common\Valheim"
+    if (Test-Path $default) {
+        return $default
     }
-    throw "Steam not found in registry."
+
+    return $null
 }
 
-function Get-ValheimInstallPath {
-    $steamPath = Get-SteamLibraryPath
-    $libraryFoldersPath = Join-Path $steamPath "steamapps\libraryfolders.vdf"
-    $libraryDirs = @($steamPath)
-    if (Test-Path $libraryFoldersPath) {
-        $libraryContent = Get-Content $libraryFoldersPath | Out-String
-        $matches = Select-String -InputObject $libraryContent -Pattern '"path"\s+"([^"]+)"' -AllMatches
-        foreach ($match in $matches.Matches) {
-            $libraryDirs += $match.Groups[1].Value
-        }
-    }
-    foreach ($dir in $libraryDirs) {
-        $valheimPath = Join-Path $dir "steamapps\common\Valheim"
-        if (Test-Path $valheimPath) {
-            return $valheimPath
-        }
-    }
-    throw "Valheim installation not found."
+$installDir = Get-ValheimPath
+
+if (-not $installDir) {
+    Write-Host "❌ Could not locate Valheim installation path." -ForegroundColor Red
+    Read-Host "Please install Valheim via Steam and try again. Press Enter to exit"
+    exit 1
 }
 
-function Download-LatestReleaseZip {
-    $repo = "Avarise/Valheim"
-    $apiUrl = "https://api.github.com/repos/$repo/releases/latest"
-    $headers = @{ "User-Agent" = "ValheimModInstaller" }
-    $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers
-    $asset = $response.assets | Where-Object { $_.name -like "*.zip" } | Select-Object -First 1
+Write-Host "✔ Valheim installation found at: $installDir" -ForegroundColor Green
+
+# Download latest release zip
+Write-Host "⬇ Downloading latest modpack from GitHub..." -ForegroundColor Cyan
+try {
+    $response = Invoke-RestMethod -Uri $releaseApi -Headers @{ "User-Agent" = "PowerShell" }
+    $asset = $response.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1
+
     if (-not $asset) {
-        throw "No zip asset found in the latest release."
+        throw "No .zip asset found in latest release."
     }
-    $tempZip = Join-Path $env:TEMP $asset.name
+
     Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $tempZip
-    return $tempZip
+    Write-Host "✔ Downloaded modpack: $tempZip" -ForegroundColor Green
+} catch {
+    Write-Host "❌ Failed to download release: $_" -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit 1
 }
 
-function Install-Modpack {
-    $installPath = Get-ValheimInstallPath
-    Write-Host "`n✔ Valheim installation found at: $installPath"
-    $zipFile = Download-LatestReleaseZip
-    Write-Host "⬇ Downloaded modpack: $zipFile"
-
-    Write-Host "📦 Extracting contents to: $installPath"
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, $installPath, $true)
-
-    Write-Host "`n✅ Modpack installed successfully to: $installPath"
+# Extract to game root
+Write-Host "📦 Extracting contents to: $installDir" -ForegroundColor Cyan
+try {
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($tempZip, $installDir, $true)
+    Write-Host "✅ Modpack installed successfully!" -ForegroundColor Green
+} catch {
+    Write-Host "❌ Failed to extract modpack: $_" -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit 1
 }
 
-Install-Modpack
-Write-Host "`nAll done! You may now launch Valheim through Steam."
-Pause
+# Clean up
+Remove-Item $tempZip -ErrorAction SilentlyContinue
+
+Write-Host "`n🎮 All done! You may now launch Valheim through Steam." -ForegroundColor Cyan
+Read-Host "Press Enter to close this window"
