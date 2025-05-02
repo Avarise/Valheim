@@ -1,10 +1,18 @@
-Fork of BepInEx https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2202/
-ValheimPlusByGrantapher https://www.nexusmods.com/valheim/mods/2323?tab=files&file_id=18688
-Jotunn https://www.nexusmods.com/valheim/mods/1138?tab=files&file_id=18871
-Epic Loot https://www.nexusmods.com/valheim/mods/387
-Plant Everything https://www.nexusmods.com/valheim/mods/1042?tab=files&file_id=19088
-Bigger Map Radius Discovery https://www.nexusmods.com/valheim/mods/210?tab=files&file_id=18061
-Quick Slots https://www.nexusmods.com/valheim/mods/92?tab=files&file_id=18002
-Better Archery https://www.nexusmods.com/valheim/mods/348?tab=files&file_id=18724
-More Gates https://www.nexusmods.com/valheim/mods/1087?tab=files&file_id=6128
-XPortal https://www.nexusmods.com/valheim/mods/2239?tab=files&file_id=18958
+BepInEx                 
+    https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2202/
+ValheimPlusByGrantapher
+    https://www.nexusmods.com/valheim/mods/2323?tab=files&file_id=18688
+Jotunn 
+    https://www.nexusmods.com/valheim/mods/1138?tab=files&file_id=18871
+Epic Loot 
+    https://www.nexusmods.com/valheim/mods/387
+Plant Everything 
+    https://www.nexusmods.com/valheim/mods/1042?tab=files&file_id=19088
+Bigger Map Radius Discovery 
+    https://www.nexusmods.com/valheim/mods/210?tab=files&file_id=18061
+Quick Slots
+    https://www.nexusmods.com/valheim/mods/92?tab=files&file_id=18002
+More Gates
+    https://www.nexusmods.com/valheim/mods/1087?tab=files&file_id=6128
+XPortal
+    https://www.nexusmods.com/valheim/mods/2239?tab=files&file_id=18958

@@ -1,3 +1,5 @@
 /downloads
 /lib/BepInEx/LogOutput.log
 /lib/BepInEx/cache
+/lib/BepInEx/config
+!/lib/BepInEx/config/BepInEx.cfg
