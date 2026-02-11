@@ -2757,6 +2757,12 @@
                 Indicator if references from <see cref="T:Jotunn.Entities.Mock`1"/>s will be replaced at runtime.
             </summary>
         </member>
+        <member name="P:Jotunn.Entities.CustomLocation.SoftReference">
+            <summary>
+                Indicator if location is added from SoftReferenceableAssets.<br />
+                Used to delay mocking prefabs until ZoneSystem.SpawnLocation()
+            </summary>
+        </member>
         <member name="M:Jotunn.Entities.CustomLocation.#ctor(UnityEngine.GameObject,Jotunn.Configs.LocationConfig)">
             <summary>
                 Custom location from a prefab with a <see cref="T:Jotunn.Configs.LocationConfig"/> attached.<br />
@@ -2788,6 +2794,14 @@
             </summary>
             <param name="exteriorPrefab">The exterior prefab for this custom location.</param>
             <param name="interiorPrefab">The interior prefab for this custom location.</param>
+            <param name="fixReference">If true references for <see cref="T:Jotunn.Entities.Mock`1"/> objects get resolved at runtime by Jötunn.</param>
+            <param name="locationConfig">The <see cref="T:Jotunn.Configs.LocationConfig"/> for this custom location.</param>
+        </member>
+        <member name="M:Jotunn.Entities.CustomLocation.#ctor(SoftReferenceableAssets.SoftReference{UnityEngine.GameObject},System.Boolean,Jotunn.Configs.LocationConfig)">
+            <summary>
+                Custom location from a prefab with a <see cref="T:Jotunn.Configs.LocationConfig"/> attached. Using SoftReference system.
+            </summary>
+            <param name="softReferencePrefab">The exterior prefab for this custom location.</param>
             <param name="fixReference">If true references for <see cref="T:Jotunn.Entities.Mock`1"/> objects get resolved at runtime by Jötunn.</param>
             <param name="locationConfig">The <see cref="T:Jotunn.Configs.LocationConfig"/> for this custom location.</param>
         </member>
@@ -3939,6 +3953,14 @@
             <param name="gameObject">This GameObject</param>
             <param name="recursive">Traverse all child transforms</param>
         </member>
+        <member name="M:Jotunn.PrefabExtension.FixReferencesInternal(UnityEngine.GameObject,System.Boolean)">
+            <summary>
+                Resolves all references for mocks in this GameObject recursively.
+                Can additionally traverse the transforms hierarchy to fix child GameObjects recursively.
+            </summary>
+            <param name="gameObject">This GameObject</param>
+            <param name="recursive">Traverse all child transforms</param>
+        </member>
         <member name="M:Jotunn.PrefabExtension.CloneFields(UnityEngine.GameObject,UnityEngine.GameObject)">
             <summary>
                 Clones all fields from this GameObject to objectToClone.
@@ -4188,6 +4210,11 @@
                 The singleton instance of this manager.
             </summary>
         </member>
+        <member name="E:Jotunn.Managers.AssetManager.OnSoftReferenceableAssetsReady">
+            <summary>
+                Event that is invoked when the soft referenceable system is ready to be used.
+            </summary>
+        </member>
         <member name="M:Jotunn.Managers.AssetManager.#ctor">
             <summary>
                 Hide .ctor
@@ -4218,9 +4245,51 @@
             <param name="asset">The asset to register</param>
             <returns>AssetID generated from the prefab's name</returns>
         </member>
+        <member name="M:Jotunn.Managers.AssetManager.ResolveMocksOnLoad(SoftReferenceableAssets.AssetID)">
+            <summary>
+                Registers an asset to be instantiated and have its mock references resolved on load.<br/>
+                Must be called before the asset is loaded the first time.
+            </summary>
+            <param name="assetID">The <see cref="T:SoftReferenceableAssets.AssetID"/> of the asset to instantiate and resolve mocks for on load</param>
+        </member>
+        <member name="M:Jotunn.Managers.AssetManager.ResolveMocksOnLoad(SoftReferenceableAssets.AssetID,UnityEngine.Transform)">
+            <summary>
+                Registers an asset to be instantiated under the given parent and have its mock references resolved on load.<br/>
+                Must be called before the asset is loaded the first time.
+            </summary>
+            <param name="assetID">The <see cref="T:SoftReferenceableAssets.AssetID"/> of the asset to instantiate and resolve mocks for on load</param>
+            <param name="parent">Optional transform under which the asset will be instantiated, otherwise a default container is used</param>
+        </member>
+        <member name="M:Jotunn.Managers.AssetManager.ResolveMocksOnLoad``1(SoftReferenceableAssets.SoftReference{``0},UnityEngine.Transform,System.Action{``0})">
+            <summary>
+                Registers an asset to be instantiated under the given parent and have its mock references resolved on load.<br/>
+                Must be called before the asset is loaded the first time.<br/>
+                The callback will be invoked when the asset is already resolved and instantiated. Multiple callbacks can be registed for the same asset.<br/>
+            </summary>
+            <param name="softReference">The <see cref="T:SoftReferenceableAssets.SoftReference`1"/> to instantiate and resolve mocks for on load</param>
+            <param name="parent">Optional transform under which the asset will be instantiated, otherwise a default container is used</param>
+            <param name="resolveCallback">Adds a callback when the asset was resolved and instantiated</param>
+        </member>
+        <member name="M:Jotunn.Managers.AssetManager.ResolveMocksOnLoad(SoftReferenceableAssets.AssetID,UnityEngine.Transform,System.Action{UnityEngine.Object})">
+            <summary>
+                Registers an asset to be instantiated under the given parent and have its mock references resolved on load.<br/>
+                Must be called before the asset is loaded the first time.<br/>
+                The callback will be invoked when the asset is already resolved and instantiated. Multiple callbacks can be registed for the same asset.<br/>
+            </summary>
+            <param name="assetID">The <see cref="T:SoftReferenceableAssets.AssetID"/> of the asset to instantiate and resolve mocks for on load</param>
+            <param name="parent">Optional transform under which the asset will be instantiated, otherwise a default container is used</param>
+            <param name="resolveCallback">Adds a callback when the asset was resolved and instantiated</param>
+        </member>
         <member name="M:Jotunn.Managers.AssetManager.GenerateAssetID(UnityEngine.Object)">
             <summary>
                 Generates a unique AssetID, based on the asset name
+            </summary>
+            <param name="asset"></param>
+            <returns>AssetID generated from the prefab's name</returns>
+        </member>
+        <member name="M:Jotunn.Managers.AssetManager.GenerateAssetID(System.String)">
+            <summary>
+                Generates a unique AssetID, from a given string
             </summary>
             <param name="asset"></param>
             <returns>AssetID generated from the prefab's name</returns>
@@ -5983,50 +6052,6 @@
             <param name="material"></param>
             <returns>true if no mock was found or the mock could be resolved</returns>
         </member>
-        <member name="T:Jotunn.Managers.MockSystem.MockResolveException">
-            <summary>
-                Exception that is thrown for a mock prefab, that could not be resolved to a real prefab.
-            </summary>
-        </member>
-        <member name="P:Jotunn.Managers.MockSystem.MockResolveException.FailedMockName">
-            <summary>
-                Name of the prefab that could not be resolved. Mock prefix is already removed.
-            </summary>
-        </member>
-        <member name="P:Jotunn.Managers.MockSystem.MockResolveException.FailedMockPath">
-            <summary>
-                Path within the prefab that could not be resolved.
-            </summary>
-        </member>
-        <member name="P:Jotunn.Managers.MockSystem.MockResolveException.MockType">
-            <summary>
-                Type of the prefab that could not be resolved.
-            </summary>
-        </member>
-        <member name="M:Jotunn.Managers.MockSystem.MockResolveException.#ctor(System.String,System.String)">
-            <summary>
-                Creates a new instance of the <see cref="T:Jotunn.Managers.MockSystem.MockResolveException" /> class.
-            </summary>
-            <param name="message"></param>
-            <param name="failedMockName"></param>
-        </member>
-        <member name="M:Jotunn.Managers.MockSystem.MockResolveException.#ctor(System.String,System.String,System.Type)">
-            <summary>
-                Creates a new instance of the <see cref="T:Jotunn.Managers.MockSystem.MockResolveException" /> class.
-            </summary>
-            <param name="message"></param>
-            <param name="failedMockName"></param>
-            <param name="mockType"></param>
-        </member>
-        <member name="M:Jotunn.Managers.MockSystem.MockResolveException.#ctor(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.Type)">
-            <summary>
-                Creates a new instance of the <see cref="T:Jotunn.Managers.MockSystem.MockResolveException" /> class.
-            </summary>
-            <param name="message"></param>
-            <param name="failedMockName"></param>
-            <param name="failedMockPath"></param>
-            <param name="mockType"></param>
-        </member>
         <member name="T:Jotunn.Managers.NetworkManager">
             <summary>
                 Manager handling all network related code
@@ -7383,13 +7408,50 @@
             </summary>
             <param name="zoneLocation"><see cref="T:ZoneSystem.ZoneLocation"/> to add to the <see cref="T:ZoneSystem"/></param>
         </member>
-        <member name="M:Jotunn.Managers.ZoneManager.RegisterLocationInZoneSystem(ZoneSystem,ZoneSystem.ZoneLocation,BepInEx.BepInPlugin)">
+        <member name="T:Jotunn.MockResolveFailure">
             <summary>
-                Internal method for adding a ZoneLocation to a specific ZoneSystem.
+                Failure that is tracked for a mock prefab which could not be resolved to a real prefab or other type.
             </summary>
-            <param name="zoneSystem"><see cref="T:ZoneSystem"/> the location should be added to</param>
-            <param name="zoneLocation"><see cref="T:ZoneSystem.ZoneLocation"/> to add</param>
-            <param name="sourceMod"><see cref="T:BepInEx.BepInPlugin"/> which created the location</param>
+        </member>
+        <member name="P:Jotunn.MockResolveFailure.MockResolveFailures">
+            <summary>
+                Accumulated list of the tracked MockResolveFailure.
+            </summary>
+        </member>
+        <member name="M:Jotunn.MockResolveFailure.#ctor(System.String,System.String,System.String,System.Type)">
+            <summary>
+                Creates a new instance of the <see cref="T:Jotunn.MockResolveFailure" /> class.
+            </summary>
+        </member>
+        <member name="M:Jotunn.MockResolveFailure.#ctor(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.Type)">
+            <summary>
+                Creates a new instance of the <see cref="T:Jotunn.MockResolveFailure" /> class.
+            </summary>
+        </member>
+        <member name="P:Jotunn.MockResolveFailure.Message">
+            <summary>
+                Additional message to display when printing warnings.
+            </summary>
+        </member>
+        <member name="P:Jotunn.MockResolveFailure.FailedMockName">
+            <summary>
+                Name of the type that could not be resolved. Mock prefix is already removed.
+            </summary>
+        </member>
+        <member name="P:Jotunn.MockResolveFailure.FailedMockPath">
+            <summary>
+                Path within the prefab that could not be resolved.
+            </summary>
+        </member>
+        <member name="P:Jotunn.MockResolveFailure.MockType">
+            <summary>
+                Type of the prefab that could not be resolved.
+            </summary>
+        </member>
+        <member name="M:Jotunn.MockResolveFailure.PrintMockResolveFailures(System.String)">
+            <summary>
+                Prints warning messages for all the tracked MockResolveFailure.
+            </summary>
         </member>
         <member name="T:Jotunn.GUI.ColorPicker">
             <summary>
@@ -7815,6 +7877,12 @@
                 Path separator for AssetBundles
             </summary>
         </member>
+        <member name="P:Jotunn.Utils.AssetUtils.LoadImageMethod">
+            <summary>
+                Method reference to <see cref="M:UnityEngine.ImageConversion.LoadImage(UnityEngine.Texture2D,System.Byte[])" />.
+                Workaround for compiling a net 4.x mod against the nestandard 2.1 method reference.
+            </summary>
+        </member>
         <member name="M:Jotunn.Utils.AssetUtils.LoadTexture(System.String,System.Boolean)">
             <summary>
                 Loads a <see cref="T:UnityEngine.Texture2D"/> from file at runtime.
@@ -7822,6 +7890,53 @@
             <param name="texturePath">Texture path relative to "plugins" BepInEx folder</param>
             <param name="relativePath">Is the given path relative</param>
             <returns>Texture2D loaded, or null if invalid path</returns>
+        </member>
+        <member name="M:Jotunn.Utils.AssetUtils.LoadImage(System.Byte[])">
+            <summary>
+                Wrapper for https://docs.unity3d.com/ScriptReference/ImageConversion.LoadImage.html,
+                creates a new <see cref="T:UnityEngine.Texture2D"/>.
+            </summary>
+            <param name="data">The byte array containing the image data to load.</param>
+            <returns>A new texture with the loaded image if the data can be loaded, null otherwise</returns>
+        </member>
+        <member name="M:Jotunn.Utils.AssetUtils.LoadImage(UnityEngine.Texture2D,System.Byte[])">
+            <summary>
+                Wrapper for https://docs.unity3d.com/ScriptReference/ImageConversion.LoadImage.html.
+            </summary>
+            <param name="texture">The texture to load the image into.</param>
+            <param name="data">The byte array containing the image data to load.</param>
+            <returns>true if the data can be loaded, false otherwise</returns>
+        </member>
+        <member name="M:Jotunn.Utils.AssetUtils.DuplicateTexture(UnityEngine.Texture2D,UnityEngine.Rect)">
+            <summary>
+                Creates a readable copy of a rectangular region from a <see cref="T:UnityEngine.Texture2D"/>.
+            </summary>
+            <param name="texture">Source texture.</param>
+            <param name="textureRect">Region of the texture to copy.</param>
+            <returns>A readable <see cref="T:UnityEngine.Texture2D"/> of the specified region, or null if the texture is null.</returns>
+        </member>
+        <member name="M:Jotunn.Utils.AssetUtils.DuplicateTexture(UnityEngine.Texture2D)">
+            <summary>
+                Creates a readable copy of a <see cref="T:UnityEngine.Texture2D"/>.
+            </summary>
+            <param name="texture">Source texture.</param>
+            <returns>A readable copy of the texture, or null if the texture is null.</returns>
+        </member>
+        <member name="M:Jotunn.Utils.AssetUtils.DuplicateTexture(UnityEngine.Sprite)">
+            <summary>
+                Creates a readable copy of a <see cref="T:UnityEngine.Sprite"/>'s texture region.
+                If the sprite is part of an atlas, only its texture rectangle is copied.<br/>
+                Use <c>AssetUtils.DuplicateTexture(sprite.texture)</c> to copy the full texture.
+            </summary>
+            <param name="sprite">Source sprite.</param>
+            <returns>A readable <see cref="T:UnityEngine.Texture2D"/> of the sprite’s texture region, or null if the texture is null.</returns>
+        </member>
+        <member name="M:Jotunn.Utils.AssetUtils.DuplicateSprite(UnityEngine.Sprite)">
+            <summary>
+                Creates a readable copy of a <see cref="T:UnityEngine.Sprite"/>.
+            </summary>
+            <param name="sprite">Source sprite.</param>
+            <returns>A new <see cref="T:UnityEngine.Sprite"/> with a readable copy of its texture region, or null if the texture is null.</returns>
         </member>
         <member name="M:Jotunn.Utils.AssetUtils.LoadSpriteFromFile(System.String)">
             <summary>
